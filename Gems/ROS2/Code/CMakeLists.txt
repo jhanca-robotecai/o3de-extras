@@ -3,7 +3,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 
-find_package(sdformat13 REQUIRED)
 
 # Only allow this gem to be configured on platforms that are currently supported
 include(${CMAKE_CURRENT_SOURCE_DIR}/Platform/${PAL_PLATFORM_NAME}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
@@ -141,7 +140,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         )
 
     find_package(urdfdom)
-    target_link_libraries(${gem_name}.Editor.Static PUBLIC urdfdom::urdfdom_model ${sdformat13_LIBRARIES})
+    target_link_libraries(${gem_name}.Editor.Static PUBLIC urdfdom::urdfdom_model)
 
     ly_add_target(
         NAME ${gem_name}.Editor GEM_MODULE
@@ -223,32 +222,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             # Add ROS2.Editor.Tests to googletest
             ly_add_googletest(
                 NAME Gem::${gem_name}.Editor.Tests
-            )
-
-            # Add integration tests for SDFormat importer
-            ly_add_target(
-                NAME ROS2.SDFormat.importer.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-                    NAMESPACE Gem
-                FILES_CMAKE
-                    ros2_importer_tests_files.cmake
-                INCLUDE_DIRECTORIES
-                    PRIVATE
-                        Source
-                        Tests
-                BUILD_DEPENDENCIES
-                    PRIVATE
-                        AZ::AzTestShared
-                        AZ::AzToolsFramework
-                        Legacy::CryCommon
-                        Legacy::EditorCommon
-                        Legacy::Editor.Headers
-                        AZ::AzManipulatorTestFramework.Static
-                        Gem::ROS2.Editor.Static
-            )
-
-            # Add ROS2.SDFormat.importer.Tests to googletest
-            ly_add_googletest(
-                    NAME Gem::ROS2.SDFormat.importer.Tests
             )
         endif()
     endif()

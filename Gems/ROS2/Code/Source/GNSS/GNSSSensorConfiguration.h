@@ -7,16 +7,18 @@
  */
 #pragma once
 
-#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string.h>
 
 namespace ROS2
 {
     //! A structure capturing configuration of a Global Navigation Satellite Systems (GNSS) sensor.
-    struct GNSSSensorConfiguration
+    class GNSSSensorConfiguration : public AZ::ComponentConfig
     {
-        AZ_TYPE_INFO(GNSSSensorConfiguration, "{8bc39c6b-2f2c-4612-bcc7-0cc7033001d4}");
+    public:
+        AZ_CLASS_ALLOCATOR(GNSSSensorConfiguration, AZ::SystemAllocator);
+        AZ_RTTI(GNSSSensorConfiguration, "{8bc39c6b-2f2c-4612-bcc7-0cc7033001d4}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
         float m_originLatitudeDeg = 0.0f;

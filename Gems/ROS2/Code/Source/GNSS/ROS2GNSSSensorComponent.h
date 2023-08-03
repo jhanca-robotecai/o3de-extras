@@ -8,6 +8,8 @@
 #pragma once
 
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Serialization/Json/BaseJsonSerializer.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <ROS2/Sensor/ROS2SensorComponent.h>
 #include <rclcpp/publisher.hpp>
@@ -17,12 +19,29 @@
 
 namespace ROS2
 {
+    // Custom JSON serializer for ROS2GNSSSensorComponent configuration to handle version conversion
+    class JsonGNSSSensorConfigSerializer : public AZ::BaseJsonSerializer
+    {
+    public:
+        AZ_RTTI(ROS2::JsonGNSSSensorConfigSerializer, "{5f11f5a7-15c9-4cc7-b3fb-3399cb179dbb}", AZ::BaseJsonSerializer);
+        AZ_CLASS_ALLOCATOR_DECL;
+
+        AZ::JsonSerializationResult::Result Load(
+            void* outputValue,
+            const AZ::Uuid& outputValueTypeId,
+            const rapidjson::Value& inputValue,
+            AZ::JsonDeserializerContext& context) override;
+    };
+
     //! Global Navigation Satellite Systems (GNSS) sensor component class
     //! It provides NavSatFix data of sensor's position in GNSS frame which is defined by GNSS origin offset
     //! Offset is provided as latitude [deg], longitude [deg], altitude [m] of o3de global frame
     //! It is assumed that o3de global frame overlaps with ENU coordinate system
     class ROS2GNSSSensorComponent : public ROS2SensorComponent
     {
+        // Friended to allow access private configuration.
+        friend class JsonGNSSSensorConfigSerializer;
+
     public:
         AZ_COMPONENT(ROS2GNSSSensorComponent, "{55B4A299-7FA3-496A-88F0-764C75B0E9A7}", ROS2SensorComponent);
         ROS2GNSSSensorComponent();

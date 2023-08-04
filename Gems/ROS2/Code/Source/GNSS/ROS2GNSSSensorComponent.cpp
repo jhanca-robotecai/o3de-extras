@@ -26,9 +26,62 @@ namespace ROS2
         const char* kGNSSMsgType = "sensor_msgs::msg::NavSatFix";
     }
 
+    AZ::JsonSerializationResult::Result JsonGNSSSensorConfigSerializer::Load(
+        void* outputValue,
+        [[maybe_unused]] const AZ::Uuid& outputValueTypeId,
+        const rapidjson::Value& inputValue,
+        AZ::JsonDeserializerContext& context)
+    {
+        namespace JSR = AZ::JsonSerializationResult;
+
+        auto configInstance = reinterpret_cast<ROS2GNSSSensorComponent*>(outputValue);
+        AZ_Assert(configInstance, "Output value for JsonGNSSSensorConfigSerializer can't be null.");
+
+        JSR::ResultCode result(JSR::Tasks::ReadField);
+
+        auto copyIntoStruct = [&](const char* name, auto& dataRef)
+        {
+            rapidjson::Value::ConstMemberIterator itr = inputValue.FindMember(name);
+            if (itr != inputValue.MemberEnd() && itr->value.IsFloat())
+            {
+                dataRef = itr->value.GetFloat();
+            }
+        };
+
+        copyIntoStruct("gnssOriginLatitude", configInstance->m_gnssConfiguration.m_originLatitudeDeg);
+        copyIntoStruct("gnssOriginLongitude", configInstance->m_gnssConfiguration.m_originLongitudeDeg);
+        copyIntoStruct("gnssOriginAltitude", configInstance->m_gnssConfiguration.m_originAltitude);
+
+        result.Combine(ContinueLoadingFromJsonObjectField(
+            &configInstance->m_gnssConfiguration,
+            azrtti_typeid<decltype(configInstance->m_gnssConfiguration)>(),
+            inputValue,
+            "gnssSensorConfiguration",
+            context));
+
+        result.Combine(ContinueLoadingFromJsonObjectField(
+            &configInstance->m_sensorConfiguration,
+            azrtti_typeid<decltype(configInstance->m_sensorConfiguration)>(),
+            inputValue,
+            "SensorConfiguration",
+            context));
+
+        return context.Report(
+            result,
+            result.GetProcessing() != JSR::Processing::Halted ? "Successfully loaded GNSSSensorConfiguration information."
+                                                              : "Failed to load GNSSSensorConfiguration information.");
+    }
+
+    AZ_CLASS_ALLOCATOR_IMPL(JsonGNSSSensorConfigSerializer, AZ::SystemAllocator);
+
     void ROS2GNSSSensorComponent::Reflect(AZ::ReflectContext* context)
     {
         GNSSSensorConfiguration::Reflect(context);
+
+        if (auto jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+        {
+            jsonContext->Serializer<JsonGNSSSensorConfigSerializer>()->HandlesType<ROS2GNSSSensorComponent>();
+        }
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {

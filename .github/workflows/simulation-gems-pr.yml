@@ -276,6 +276,7 @@ jobs:
       - name: Build gem modules, test targets and project assets
         timeout-minutes: 330
         run: |
+          source /opt/ros/${{ env.ROS_DISTRO }}/setup.bash
           cmake --build "${{ env.PROJECT_PATH }}/build/linux" --config profile --target \
             LevelGeoreferencing LevelGeoreferencing.Editor \
             ROS2 ROS2.Editor \
